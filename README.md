@@ -18,7 +18,7 @@ The `logger` package provides a logging utility that allows you to log messages 
 
 5. You can now use the functions, types, and other elements provided by the external package in your own code.
 
-## Creating a Logger
+### Creating a Logger
 To create a new logger instance, use the `NewLogger` function:
 
 ```go
@@ -31,22 +31,54 @@ if err != nil {
 
 Valid log severities are `NONE`, `PRODUCTION`, and `DEBUG`. An error will be returned if an invalid severity is provided.
 
-## Logging Messages
+* Create only one logger object in your project and pass it's reference to your modules. 
+
+### Logging Messages
 To log a message, use the `Entry` method of the logger instance:
 
 ```go
+// Start a time counter from here
+startTime := time.Now()
+
+// DO HERE SOME OPERATIONS - USER CODE HERE
+
+// Define and prepare the logger container based on your operations result 
+// It is also allowed that a field is left blank or not be considered
 container := logger.Container{
-    PreText:        "Some pre-text",
-    Id:             "123",
-    Source:         "example.go",
+    PreText:        "ERROR",
+    Id:             "a3fe5b1f", // Hash string e.g. from operation result
+    Source:         "/handler/users",
     Info:           "Some information",
     Data:           "Some data",
     Error:          "An error occurred",
-    ProcessingTime: time.Duration(500 * time.Millisecond),
-    HttpRequest:    req,
+    ProcessingTime: time.Since(start), // Takes elapsed time since start Time
+    HttpRequest:    r,
     ProcessedData:  data,
 }
 
+// Necessary to finally write log
+logger.Entry(container)
+```
+
+Another example:
+
+```go
+// Start a time counter from here
+startTime := time.Now()
+
+// DO HERE SOME OPERATIONS - USER CODE HERE
+
+// Define and prepare the logger container based on your operations result 
+// It is also allowed that a field is left blank or not be considered
+container := logger.Container{
+    PreText:        "INFO",
+    Id:             "fafeeb13", // Hash string e.g. from operation result
+    Source:         "/handler/users",
+    ProcessingTime: time.Since(start), // Takes elapsed time since start Time
+    HttpRequest:    r,
+}
+
+// Necessary to finally write log
 logger.Entry(container)
 ```
 
@@ -54,7 +86,7 @@ The `Container` struct contains the necessary information for the log entry, inc
 
 The log message will be printed according to the severity level set during the logger creation. If the severity is set to `NONE`, the message will be ignored.
 
-## Log Output
+### Log Output
 The log output will be printed to the console or standard output, depending on the severity level:
 
 * If the severity is set to PRODUCTION, the log message will be printed using the log.Println function.

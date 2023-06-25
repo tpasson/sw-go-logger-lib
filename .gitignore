@@ -19,3 +19,10 @@
 
 # Go workspace file
 go.work
+
+# Log files
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db

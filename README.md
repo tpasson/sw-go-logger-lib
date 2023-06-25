@@ -1,19 +1,22 @@
 # Logger Package
-The `logger` package provides a logging utility that allows you to log messages with different severity levels. It includes features for structured logging and supports various log severities, such as NONE, PRODUCTION, and DEBUG.
-
-## Installation
-To use the `logger` package, you need to have Go installed and set up. Then, you can install the package by running the following command:
-
-```bash
-go get github.com/<username>/<repository>/logger
-```
-
+The `logger` package provides a logging utility that allows you to log messages with different severity levels. It includes features for structured logging.
 ## Usage
-Import the logger package in your Go code:
 
-```go
-import "github.com/<username>/<repository>/logger"
-```
+1. In your project, open a terminal or command prompt and navigate to the root directory of your Go project.
+
+2. Use the `go get` command followed by the import path to download the package and its dependencies. For example, if the import path is `github.com/passon-engineering/sw-go-logger-lib`, run the following command:
+   ```
+   go get github.com/passon-engineering/sw-go-logger-lib
+   ```
+
+3. After running `go get`, Go will download the package and its dependencies and store them in your local Go workspace.
+
+4. In your Go code, you can import the package using the import path you identified earlier. For example:
+   ```go
+   import "github.com/passon-engineering/sw-go-logger-lib"
+   ```
+
+5. You can now use the functions, types, and other elements provided by the external package in your own code.
 
 ## Creating a Logger
 To create a new logger instance, use the `NewLogger` function:

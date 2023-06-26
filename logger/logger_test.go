@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func TestGeneral(t *testing.T) {
+func TestLogger(t *testing.T) {
 	// Delete previous generated log files
 	err := deleteLogFiles()
 	if err != nil {

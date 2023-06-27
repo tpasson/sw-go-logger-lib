@@ -45,13 +45,23 @@ var severityMap = map[string]LogSeverity{
 
 
 
-// NewLogger creates a new Logger instance with the specified severity.
-// Valid log severities are: NONE, PRODUCTION, DEBUG.
+/* 
+NewLogger creates a new Logger instance with the specified severity.
+Valid log severities are: NONE, PRODUCTION, DEBUG.
+
+Parameters:
+	- severity: string - the desired severity level (NONE, PRODUCTION, DEBUG)
+
+Returns:
+	- *Logger: the created Logger instance
+	- error: an error if the severity level is invalid 
+*/
 func NewLogger(severity string) (*Logger, error) {
-	logSeverity, ok := severityMap[severity]
-	if !ok {
-		return nil, fmt.Errorf("invalid log severity: %s. valid log severities: NONE, PRODUCTION, DEBUG", severity)
+	if !isValidSeverity(severity) {
+		return nil, fmt.Errorf("invalid log severity: %s. valid log severities: %s", severity, getValidSeverities())
 	}
+
+	logSeverity := severityMap[severity]
 
 	logger := &Logger{
 		Severity: logSeverity,
@@ -65,7 +75,19 @@ func NewLogger(severity string) (*Logger, error) {
 
 
 
-// Entry logs a message based on the severity level and the provided container.
+/* 
+Entry logs a message based on the severity level and the provided container.
+
+If the logger's severity level is set to NONE, the log entry will be skipped.
+
+If the timestamp of the provided container is zero, it will be set to the current
+timestamp using the generateTimestamp function.
+
+The log entry is then sent to the logger's LogChan channel for further processing.
+
+Parameters:
+	- c: Container - the log entry container containing the log message and metadata 
+*/
 func (l *Logger) Entry(c Container) {
 	if l.Severity == NONE {
 		return
@@ -80,11 +102,62 @@ func (l *Logger) Entry(c Container) {
 
 
 
-// generateTimestamp creates the current timestamp
+/* 
+isValidSeverity checks if the given severity string is valid.
+
+Parameters:
+	- severity: string - the severity string to check
+
+Returns:
+	- bool: true if the severity string is valid, false otherwise 
+*/
+func isValidSeverity(severity string) bool {
+	_, ok := severityMap[severity]
+	return ok
+}
+
+
+
+/*
+getValidSeverities returns a string containing all valid severities.
+
+Returns:
+	- string: a comma-separated string of valid severities
+*/
+func getValidSeverities() string {
+	validSeverities := make([]string, 0, len(severityMap))
+	for severity := range severityMap {
+		validSeverities = append(validSeverities, severity)
+	}
+	return strings.Join(validSeverities, ", ")
+}
+
+
+
+/* 
+generateTimestamp creates the current timestamp.
+
+Returns:
+	- time.Time: the current timestamp 
+*/
 func generateTimestamp() time.Time {
 	return time.Now()
 }
 
+
+
+/* 
+formatTimestamp formats the given timestamp and returns it as a string.
+
+Parameters:
+	- timestamp: time.Time - the timestamp to format
+
+Returns:
+	- string: the formatted timestamp 
+*/
+func formatTimestamp(timestamp time.Time) string {
+	return timestamp.Format(time.RFC3339)
+}
 
 
 // processLogs handles log entries asynchronously
@@ -127,14 +200,13 @@ func (l *Logger) processLogs() {
 
 
 
-// formatTimestamp formats the current timestamp and returns it as a string
-func formatTimestamp(timestamp time.Time) string {
-	return timestamp.Format(time.RFC3339)
-}
+/* 
+appendFields appends non-empty fields from the container to the log message.
 
-
-
-// appendFields appends non-empty fields from the container to the log message
+Parameters:
+	- result: *strings.Builder - the string builder to append the fields to
+	- c: Container - the log entry container 
+*/
 func appendFields(result *strings.Builder, c Container) {
 	fields := []string{
 		c.PreText,
@@ -153,7 +225,13 @@ func appendFields(result *strings.Builder, c Container) {
 
 
 
-// appendError appends the error message with color formatting to the log message
+/* 
+appendError appends the error message with color formatting to the log message.
+
+Parameters:
+	- result: *strings.Builder - the string builder to append the error message to
+	- c: Container - the log entry container 
+*/
 func appendError(result *strings.Builder, c Container) {
 	if c.Error != "" {
 		result.WriteString(" \033[31mError: " + c.Error + "\033[0m")
@@ -162,7 +240,13 @@ func appendError(result *strings.Builder, c Container) {
 
 
 
-// appendHttpRequest appends HTTP request details to the log message
+/* 
+appendHttpRequest appends HTTP request details to the log message.
+
+Parameters:
+	- result: *strings.Builder - the string builder to append the HTTP request details to
+	- c: Container - the log entry container 
+*/
 func appendHttpRequest(result *strings.Builder, c Container) {
 	if c.HttpRequest != nil {
 		result.WriteString(" " + c.HttpRequest.RemoteAddr + " " + c.HttpRequest.Method + " " + c.HttpRequest.URL.String())
@@ -171,7 +255,13 @@ func appendHttpRequest(result *strings.Builder, c Container) {
 
 
 
-// appendProcessingTime appends the processing time with color formatting to the log message
+/* 
+appendProcessingTime appends the processing time with color formatting to the log message.
+
+Parameters:
+	- result: *strings.Builder - the string builder to append the processing time to
+	- c: Container - the log entry container 
+*/
 func appendProcessingTime(result *strings.Builder, c Container) {
 	processingTimeMs := c.ProcessingTime.Microseconds() / 1000
 	formattedTime := strconv.FormatInt(processingTimeMs, 10) + " ms"
@@ -183,7 +273,13 @@ func appendProcessingTime(result *strings.Builder, c Container) {
 
 
 
-// logWithJson logs the message with additional JSON data
+/* 
+logWithJson logs the message with additional JSON data.
+
+Parameters:
+	- message: string - the log message to append the JSON data to
+	- c: Container - the log entry container 
+*/
 func logWithJson(message string, c Container) {
 	wJsonBytes, err := json.MarshalIndent(c.ProcessedData, "", "  ")
 	if err != nil {
@@ -205,7 +301,13 @@ func logWithJson(message string, c Container) {
 
 
 
-// writeLog writes the log entry
+/* 
+writeLog writes the log entry.
+
+Parameters:
+	- message: string - the log message to write
+	- c: *Container - the log entry container 
+*/
 func writeLog(message string, c *Container) {
 	// Format the log file name as YYYY_MM_DD.log based on the log event timestamp
 	logFileName := c.Timestamp.Format("2006_01_02") + ".log"

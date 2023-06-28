@@ -30,18 +30,23 @@ func TestLoggerOutput(t *testing.T) {
 
 func candidateOne(t *testing.T) {
 		// Create a new logger with desired format
-		logger := NewLogger([]LogFormat{
-			TIMESTAMP, 
-			STATUS, 
-			PRE_TEXT, 
-			HTTP_REQUEST, 
-			ID, 
-			SOURCE, 
-			INFO, 
-			DATA, 
-			ERROR, 
-			PROCESSING_TIME, 
-			PROCESSED_DATA,
+		logger := NewLogger(
+			[]LogFormat{
+				TIMESTAMP, 
+				STATUS, 
+				PRE_TEXT, 
+				HTTP_REQUEST, 
+				ID, 
+				SOURCE, 
+				INFO, 
+				DATA, 
+				ERROR, 
+				PROCESSING_TIME, 
+				PROCESSED_DATA,
+			}, Options{
+				OutputStdout: true,
+				OutputFile: true,
+				OutputFolderPath: ".",
 		})
 
 		// Create a mock HTTP request for testing
@@ -106,7 +111,23 @@ func candidateOne(t *testing.T) {
 
 func candidateTwo(t *testing.T) {
 	// Create a new logger with desired format
-	logger := NewLogger([]LogFormat{STATUS, PRE_TEXT, HTTP_REQUEST, ID, SOURCE, INFO, DATA, ERROR, PROCESSING_TIME, PROCESSED_DATA})
+	logger := NewLogger(
+		[]LogFormat{
+			STATUS, 
+			PRE_TEXT, 
+			HTTP_REQUEST, 
+			ID, 
+			SOURCE, 
+			INFO, 
+			DATA, 
+			ERROR, 
+			PROCESSING_TIME, 
+			PROCESSED_DATA,
+			}, Options{
+		OutputStdout: true,
+		OutputFile: true,
+		OutputFolderPath: ".",
+	})
 
 	// Create a log entry container
 	container := Container{
@@ -152,7 +173,11 @@ func candidateTwo(t *testing.T) {
 
 func candidateThree(t *testing.T) {
 	// Create a new logger with desired format
-	logger := NewLogger([]LogFormat{})
+	logger := NewLogger([]LogFormat{}, Options{
+		OutputStdout: true,
+		OutputFile: true,
+		OutputFolderPath: ".",
+	})
 
 	// Create a log entry container
 	container := Container{
@@ -198,7 +223,15 @@ func candidateThree(t *testing.T) {
 
 func candidateFour(t *testing.T) {
 	// Create a new logger with desired format
-	logger := NewLogger([]LogFormat{STATUS, ID})
+	logger := NewLogger(
+		[]LogFormat{
+			STATUS,
+			ID,
+		}, Options{
+				OutputStdout: true,
+				OutputFile: true,
+				OutputFolderPath: ".",
+		})
 
 	// Create a log entry container
 	containerInfo := Container{

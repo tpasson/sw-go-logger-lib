@@ -22,20 +22,27 @@ The `logger` package provides a logging utility that allows you to log messages 
 To create a new logger instance, use the `NewLogger` function:
 
 ```go
-logger := NewLogger([]LogFormat{
-    TIMESTAMP, 
-    STATUS, 
-    PRE_TEXT, 
-    HTTP_REQUEST, 
-    ID, 
-    SOURCE, 
-    DATA, 
-    ERROR, 
-    PROCESSING_TIME
+logger := NewLogger(
+    []LogFormat{
+        TIMESTAMP, 
+        STATUS, 
+        PRE_TEXT, 
+        HTTP_REQUEST, 
+        ID, 
+        SOURCE, 
+        DATA, 
+        ERROR, 
+        PROCESSING_TIME,
+    }, Options {
+        OutputStdout: true,
+        OutputFile: true,
+        OutputFolderPath: "/path/to/folder",
 })
 ```
 
-* Create only one logger object in your project and pass it's reference to your modules. 
+NOTE: The order you choose with `LogFormat` will be strictly kept!
+
+* You can create one or more (be sure to choose different log files then) logger objects in your project and pass it's reference to your modules. 
 
 ### Logging Messages
 To log a message, use the `Entry` method of the logger instance:
@@ -50,13 +57,13 @@ startTime := time.Now()
 // It is also allowed that a field is left blank or not be considered
 // Create a log entry container
 container := Container{
-    Status:       logger.STATUS_INFO,
-    PreText: 	  "SERVER1",
-    HttpRequest:  r,
-    Id: 		  "5f322ac4ba",
-    Source:		  "handler/user",
-    Data: 		  "233",	
-    Error: 		  "something went wrong",
+    Status:         logger.STATUS_INFO,
+    PreText:        "SERVER1",
+    HttpRequest:    r,
+    Id:             "5f322ac4ba",
+    Source:         "handler/user",
+    Data:           "233",	
+    Error:          "something went wrong",
     ProcessingTime: time.Since(start), // Takes elapsed time since start Time
 }
 
@@ -75,7 +82,7 @@ startTime := time.Now()
 // Define and prepare the logger container based on your operations result 
 // It is also allowed that a field is left blank or not be considered
 container := logger.Container{
-    Status:        logger.STATUS_INFO,
+    Status:         logger.STATUS_INFO,
     Id:             "fafeeb13",
     Source:         "/handler/users",
     ProcessingTime: time.Since(start), // Takes elapsed time since start Time
@@ -88,7 +95,7 @@ logger.Entry(container)
 
 The `Container` struct contains the necessary information for the log entry.
 
-The log message will be printed according to the severity level set during the logger creation. If the severity is set to `NONE`, the message will be ignored.
+The log message will be printed according to defined structure.
 
 ### Log Output
 The log output will be printed to the standard output, file or both. 

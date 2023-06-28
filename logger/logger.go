@@ -14,6 +14,13 @@ type Logger struct {
 	Format []LogFormat
 	LogChan  chan Container
 	StatusCounters map[LogStatus]int
+	Options Options
+}
+
+type Options struct {
+	OutputStdout bool // Set true if logs should be routed to STDOUT
+	OutputFile bool // Set true if logs should be routed to file
+	OutputFolderPath string // Folder in which logs shall be stored
 }
 
 type Container struct {
@@ -37,12 +44,13 @@ type Container struct {
 //
 // Returns:
 //	- *Logger: the created Logger instance
-func NewLogger(format []LogFormat) (*Logger) {
+func NewLogger(format []LogFormat, opt Options) (*Logger) {
 	logger := &Logger{
 		Format: format,
 		LogChan:  make(chan Container),
 		// Initialize the LevelCounters map
 		StatusCounters: make(map[LogStatus]int),
+		Options: opt,
 	}
 
 	go logger.processLogs()

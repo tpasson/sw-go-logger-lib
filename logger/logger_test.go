@@ -30,7 +30,19 @@ func TestLoggerOutput(t *testing.T) {
 
 func candidateOne(t *testing.T) {
 		// Create a new logger with desired format
-		logger := NewLogger([]LogFormat{TIMESTAMP, STATUS, PRE_TEXT, HTTP_REQUEST, ID, SOURCE, INFO, DATA, ERROR, PROCESSING_TIME, PROCESSED_DATA})
+		logger := NewLogger([]LogFormat{
+			TIMESTAMP, 
+			STATUS, 
+			PRE_TEXT, 
+			HTTP_REQUEST, 
+			ID, 
+			SOURCE, 
+			INFO, 
+			DATA, 
+			ERROR, 
+			PROCESSING_TIME, 
+			PROCESSED_DATA,
+		})
 
 		// Create a mock HTTP request for testing
 		request, _ := http.NewRequest("GET", "https://example.com", nil)

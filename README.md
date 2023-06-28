@@ -22,7 +22,17 @@ The `logger` package provides a logging utility that allows you to log messages 
 To create a new logger instance, use the `NewLogger` function:
 
 ```go
-	logger := NewLogger([]LogFormat{TIMESTAMP, STATUS, PRE_TEXT, HTTP_REQUEST, ID, SOURCE, DATA, ERROR, PROCESSING_TIME})
+logger := NewLogger([]LogFormat{
+    TIMESTAMP, 
+    STATUS, 
+    PRE_TEXT, 
+    HTTP_REQUEST, 
+    ID, 
+    SOURCE, 
+    DATA, 
+    ERROR, 
+    PROCESSING_TIME
+})
 ```
 
 * Create only one logger object in your project and pass it's reference to your modules. 

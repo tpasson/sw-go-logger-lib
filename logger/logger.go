@@ -3,7 +3,6 @@ package logger
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -11,20 +10,14 @@ import (
 	"time"
 )
 
-type LogSeverity int
-
-const (
-	NONE LogSeverity = iota
-	PRODUCTION
-	DEBUG
-)
-
 type Logger struct {
-	Severity LogSeverity
+	Format []LogFormat
 	LogChan  chan Container
+	StatusCounters map[LogStatus]int
 }
 
 type Container struct {
+	Status				 LogStatus
 	PreText        string
 	Id             string
 	Source         string
@@ -34,62 +27,45 @@ type Container struct {
 	ProcessingTime time.Duration
 	Timestamp      time.Time
 	HttpRequest    *http.Request
-	ProcessedData  *interface{}
+	ProcessedData  any
 }
 
-var severityMap = map[string]LogSeverity{
-	"NONE":       NONE,
-	"PRODUCTION": PRODUCTION,
-	"DEBUG":      DEBUG,
-}
-
-
-
-/* 
-NewLogger creates a new Logger instance with the specified severity.
-Valid log severities are: NONE, PRODUCTION, DEBUG.
-
-Parameters:
-	- severity: string - the desired severity level (NONE, PRODUCTION, DEBUG)
-
-Returns:
-	- *Logger: the created Logger instance
-	- error: an error if the severity level is invalid 
-*/
-func NewLogger(severity string) (*Logger, error) {
-	if !isValidSeverity(severity) {
-		return nil, fmt.Errorf("invalid log severity: %s. valid log severities: %s", severity, getValidSeverities())
-	}
-
-	logSeverity := severityMap[severity]
-
+// Creates a new Logger instance with the specified ontent.
+//
+// Parameters:
+//	- format: string - the desired format
+//
+// Returns:
+//	- *Logger: the created Logger instance
+func NewLogger(format []LogFormat) (*Logger) {
 	logger := &Logger{
-		Severity: logSeverity,
+		Format: format,
 		LogChan:  make(chan Container),
+		// Initialize the LevelCounters map
+		StatusCounters: make(map[LogStatus]int),
 	}
 
 	go logger.processLogs()
 
-	return logger, nil
+	return logger
 }
 
 
 
-/* 
-Entry logs a message based on the severity level and the provided container.
-
-If the logger's severity level is set to NONE, the log entry will be skipped.
-
-If the timestamp of the provided container is zero, it will be set to the current
-timestamp using the generateTimestamp function.
-
-The log entry is then sent to the logger's LogChan channel for further processing.
-
-Parameters:
-	- c: Container - the log entry container containing the log message and metadata 
-*/
+// Logs a message based on the severity level and the provided container.
+//
+// If the logger's severity level is set to NONE, the log entry will be skipped.
+//
+// If the timestamp of the provided container is zero, it will be set to the current
+// timestamp using the generateTimestamp function.
+//
+// The log entry is then sent to the logger's LogChan channel for further processing.
+//
+// Parameters:
+//	- c: Container - the log entry container containing the log message and metadata 
 func (l *Logger) Entry(c Container) {
-	if l.Severity == NONE {
+	// Check for element - if empty: logger disabled
+	if len(l.Format) == 0 {
 		return
 	}
 
@@ -102,212 +78,198 @@ func (l *Logger) Entry(c Container) {
 
 
 
-/* 
-isValidSeverity checks if the given severity string is valid.
-
-Parameters:
-	- severity: string - the severity string to check
-
-Returns:
-	- bool: true if the severity string is valid, false otherwise 
-*/
-func isValidSeverity(severity string) bool {
-	_, ok := severityMap[severity]
-	return ok
-}
-
-
-
-/*
-getValidSeverities returns a string containing all valid severities.
-
-Returns:
-	- string: a comma-separated string of valid severities
-*/
-func getValidSeverities() string {
-	validSeverities := make([]string, 0, len(severityMap))
-	for severity := range severityMap {
-		validSeverities = append(validSeverities, severity)
-	}
-	return strings.Join(validSeverities, ", ")
-}
-
-
-
-/* 
-generateTimestamp creates the current timestamp.
-
-Returns:
-	- time.Time: the current timestamp 
-*/
+// Creates the current timestamp.
+//
+// Returns:
+//	- time.Time: the current timestamp 
 func generateTimestamp() time.Time {
 	return time.Now()
 }
 
 
 
-/* 
-formatTimestamp formats the given timestamp and returns it as a string.
-
-Parameters:
-	- timestamp: time.Time - the timestamp to format
-
-Returns:
-	- string: the formatted timestamp 
-*/
+// Formats the given timestamp and returns it as a string.
+//
+// Parameters:
+//	- timestamp: time.Time - the timestamp to format
+//
+// Returns:
+//	- string: the formatted timestamp 
 func formatTimestamp(timestamp time.Time) string {
 	return timestamp.Format(time.RFC3339)
 }
 
 
-// processLogs handles log entries asynchronously
+
+// Processes logs from the log channel and writes them to the log file.
+//
+// It is a method of the Logger type and is executed as a goroutine. It continuously reads log entries
+// from the log channel (`l.LogChan`) and processes each log entry by formatting it based on the configured
+// log format items. The formatted log message is then written to the log file and also printed to STDOUT.
+//
+// This method uses various helper functions to format different log components based on the configured format items.
+// It also trims any trailing spaces from the formatted log message before writing it to the log file.
 func (l *Logger) processLogs() {
 	for c := range l.LogChan {
-		// Process the log entry
-		if l.Severity == NONE {
-			continue
-		}
+
 
 		// Create buffer
 		var result strings.Builder
 
-		result.WriteString(formatTimestamp(c.Timestamp))
-
-		// Append fields from the container to the log message
-		appendFields(&result, c)
-
-		// Append error message, if present, to the log message
-		appendError(&result, c)
-
-		// Append HTTP request details, if present, to the log message
-		appendHttpRequest(&result, c)
-
-		// Append processing time, if non-zero, to the log message
-		appendProcessingTime(&result, c)
-
-		switch l.Severity {
-		case PRODUCTION:
-			// Log the message for production severity
-			// Do nothing
-		case DEBUG:
-			// Log the message with additional JSON data for debug severity
-			logWithJson(result.String(), c)
+		for _, formatItem := range l.Format {
+			switch formatItem {
+			case STATUS:
+				if str := logStatustoString[c.Status]; str != "" {
+					// Increment the log level counter
+					incrementLogStatusCounter(l, c.Status)
+					result.WriteString(str + " ")
+				}
+			case PRE_TEXT:
+				if c.PreText != "" {
+					result.WriteString(c.PreText + " ")
+				}
+			case ID:
+				if c.Id != "" {
+					result.WriteString(c.Id + " ")
+				}
+			case SOURCE:
+				if c.Source != "" {
+					result.WriteString(c.Source + " ")
+				}
+			case INFO:
+				if c.Info != "" {
+					result.WriteString(c.Info + " ")
+				}
+			case DATA:
+				if c.Data != "" {
+					result.WriteString(c.Data + " ")
+				}
+			case ERROR:
+				if c.Error != "" {
+					result.WriteString(c.Error + " ")
+				}
+			case PROCESSING_TIME:
+				if str := getProcessingTime(c.ProcessingTime); str != "" {
+					result.WriteString(str + " ")
+				}
+			case TIMESTAMP:
+				if str := formatTimestamp(c.Timestamp); str != "" {
+					result.WriteString(str + " ")
+				}
+			case HTTP_REQUEST:
+				if str := getHttpRequest(c.HttpRequest); str != "" {
+					result.WriteString(str + " ")
+				}
+			case PROCESSED_DATA:
+				if str := getProcessedData(c.ProcessedData); str != "" {
+					result.WriteString(str + " ")
+				}
+			}
 		}
 
-		writeLog(result.String(), &c)
+		trimmedResult := strings.TrimRight(result.String(), " ")
+
+		writeLog(trimmedResult, &c)
 	}
 }
 
 
 
-/* 
-appendFields appends non-empty fields from the container to the log message.
-
-Parameters:
-	- result: *strings.Builder - the string builder to append the fields to
-	- c: Container - the log entry container 
-*/
-func appendFields(result *strings.Builder, c Container) {
-	fields := []string{
-		c.PreText,
-		c.Id,
-		c.Source,
-		c.Info,
-		c.Data,
+// Returns a formatted string representation of an HTTP request.
+//
+// It takes an *http.Request object as input and returns a string containing the remote address,
+// HTTP method, and URL of the request. If the provided HTTP request is nil, an empty string is returned.
+//
+// Parameters:
+//    - httpRequest: *http.Request - the HTTP request object to format
+//
+// Returns:
+//    - string: the formatted HTTP request
+//
+// Example:
+//    request := &http.Request{
+//        Method: "GET",
+//        URL:    &url.URL{Scheme: "https", Host: "example.com", Path: "/"},
+//    }
+//    result := getHttpRequest(request)
+//    // result will be "192.168.0.1:12345 GET https://example.com/"
+func getHttpRequest(httpRequest *http.Request) string {
+	if httpRequest != nil {
+		return(httpRequest.RemoteAddr + " " + httpRequest.Method + " " + httpRequest.URL.String())
 	}
-
-	for _, field := range fields {
-		if field != "" {
-			result.WriteString(" " + field)
-		}
-	}
+	return ""
 }
 
 
 
-/* 
-appendError appends the error message with color formatting to the log message.
-
-Parameters:
-	- result: *strings.Builder - the string builder to append the error message to
-	- c: Container - the log entry container 
-*/
-func appendError(result *strings.Builder, c Container) {
-	if c.Error != "" {
-		result.WriteString(" \033[31mError: " + c.Error + "\033[0m")
-	}
-}
-
-
-
-/* 
-appendHttpRequest appends HTTP request details to the log message.
-
-Parameters:
-	- result: *strings.Builder - the string builder to append the HTTP request details to
-	- c: Container - the log entry container 
-*/
-func appendHttpRequest(result *strings.Builder, c Container) {
-	if c.HttpRequest != nil {
-		result.WriteString(" " + c.HttpRequest.RemoteAddr + " " + c.HttpRequest.Method + " " + c.HttpRequest.URL.String())
-	}
-}
-
-
-
-/* 
-appendProcessingTime appends the processing time with color formatting to the log message.
-
-Parameters:
-	- result: *strings.Builder - the string builder to append the processing time to
-	- c: Container - the log entry container 
-*/
-func appendProcessingTime(result *strings.Builder, c Container) {
-	processingTimeMs := c.ProcessingTime.Microseconds() / 1000
+// Returns the processing time as a formatted string.
+//
+// It takes a time.Duration value representing the processing time as input. The function
+// converts the processing time to milliseconds and formats it as "[X ms]", where X is the
+// number of milliseconds. If the processing time is zero, an empty string is returned.
+//
+// Parameters:
+//    - processingTime: time.Duration - the processing time to format
+//
+// Returns:
+//    - string: the formatted processing time
+//
+// Example:
+//    processingTime := time.Duration(500 * time.Millisecond)
+//    result := getProcessingTime(processingTime)
+//    // result will be "[500 ms]"
+func getProcessingTime(processingTime time.Duration) string {
+	processingTimeMs := processingTime.Microseconds() / 1000
 	formattedTime := strconv.FormatInt(processingTimeMs, 10) + " ms"
 
 	if processingTimeMs != 0 {
-		result.WriteString(" [" + formattedTime + "]")
+		result := "[" + formattedTime + "]"
+		return result
 	}
+	return ""
 }
 
 
 
-/* 
-logWithJson logs the message with additional JSON data.
-
-Parameters:
-	- message: string - the log message to append the JSON data to
-	- c: Container - the log entry container 
-*/
-func logWithJson(message string, c Container) {
-	wJsonBytes, err := json.MarshalIndent(c.ProcessedData, "", "  ")
+// Serializes the provided data to JSON format.
+//
+// It takes any value as the input data and marshals it into JSON format using
+// the json.MarshalIndent function. The data is indented with two spaces per level.
+// If an error occurs during the marshaling process, the error message is returned.
+// Otherwise, the marshaled data is returned as a string.
+//
+// Parameters:
+//    - processedData: any - the data to be processed
+//
+// Returns:
+//    - string: the processed data in JSON format, or an error message
+//
+// Example:
+//    result := getProcessedData(data)
+//
+// Output:
+//    {"name": "John Doe", "age": 30}
+func getProcessedData(processedData any) string {
+	wJsonBytes, err := json.MarshalIndent(processedData, "", "  ")	
 	if err != nil {
-		log.Println("Error marshaling to JSON:", err)
+		return (err.Error())
 	}
 	wJsonData := string(wJsonBytes)
 
-	rJsonData := ""
-	if c.HttpRequest != nil {
-		rJsonBytes, err := json.MarshalIndent(c.HttpRequest.Body, "", "  ")
-		if err != nil {
-			log.Println("Error marshaling to JSON:", err)
-		}
-		rJsonData = string(rJsonBytes)
-	}
-
-	message += fmt.Sprintf(" BODY JSON: %s WRITE/PROCESSED JSON: %s", rJsonData, wJsonData)
+	return wJsonData
 }
 
 
 
-/* 
-writeLog writes the log entry.
-
-Parameters:
-	- message: string - the log message to write
-	- c: *Container - the log entry container 
-*/
+// Writes the log message to a log file and also prints it to STDOUT.
+//
+// It formats the log file name as "YYYY_MM_DD.log" based on the log event timestamp.
+// The log file is opened in append mode and created if it doesn't exist.
+// The log message is written to the file and also printed to STDOUT.
+//
+// Parameters:
+//    - message: string - the log message to write
+//    - c: *Container - the log entry container
 func writeLog(message string, c *Container) {
 	// Format the log file name as YYYY_MM_DD.log based on the log event timestamp
 	logFileName := c.Timestamp.Format("2006_01_02") + ".log"
@@ -325,4 +287,7 @@ func writeLog(message string, c *Container) {
 	if err != nil {
 		fmt.Println("Failed to write to log file:", err)
 	}
+
+	// Write the log message to STDOUT
+	fmt.Println(message)
 }

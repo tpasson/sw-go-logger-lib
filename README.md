@@ -13,7 +13,7 @@ The `logger` package provides a logging utility that allows you to log messages 
 
 4. In your Go code, you can import the package using the import path you identified earlier. For example:
    ```go
-   import "github.com/passon-engineering/sw-go-logger-lib"
+   import "github.com/passon-engineering/sw-go-logger-lib/logger"
    ```
 
 5. You can now use the functions, types, and other elements provided by the external package in your own code.
@@ -22,14 +22,8 @@ The `logger` package provides a logging utility that allows you to log messages 
 To create a new logger instance, use the `NewLogger` function:
 
 ```go
-severity := "PRODUCTION" // Specify the log severity
-logger, err := logger.NewLogger(severity)
-if err != nil {
-    // Handle the error
-}
+	logger := NewLogger([]LogFormat{TIMESTAMP, STATUS, PRE_TEXT, HTTP_REQUEST, ID, SOURCE, DATA, ERROR, PROCESSING_TIME})
 ```
-
-Valid log severities are `NONE`, `PRODUCTION`, and `DEBUG`. An error will be returned if an invalid severity is provided.
 
 * Create only one logger object in your project and pass it's reference to your modules. 
 
@@ -44,16 +38,16 @@ startTime := time.Now()
 
 // Define and prepare the logger container based on your operations result 
 // It is also allowed that a field is left blank or not be considered
-container := logger.Container{
-    PreText:        "ERROR",
-    Id:             "a3fe5b1f", // Hash string e.g. from operation result
-    Source:         "/handler/users",
-    Info:           "Some information",
-    Data:           "Some data",
-    Error:          "An error occurred",
+// Create a log entry container
+container := Container{
+    Status:       logger.STATUS_INFO,
+    PreText: 	  "SERVER1",
+    HttpRequest:  r,
+    Id: 		  "5f322ac4ba",
+    Source:		  "handler/user",
+    Data: 		  "233",	
+    Error: 		  "something went wrong",
     ProcessingTime: time.Since(start), // Takes elapsed time since start Time
-    HttpRequest:    r,
-    ProcessedData:  data,
 }
 
 // Necessary to finally write log
@@ -71,8 +65,8 @@ startTime := time.Now()
 // Define and prepare the logger container based on your operations result 
 // It is also allowed that a field is left blank or not be considered
 container := logger.Container{
-    PreText:        "INFO",
-    Id:             "fafeeb13", // Hash string e.g. from operation result
+    Status:        logger.STATUS_INFO,
+    Id:             "fafeeb13",
     Source:         "/handler/users",
     ProcessingTime: time.Since(start), // Takes elapsed time since start Time
     HttpRequest:    r,
@@ -82,15 +76,11 @@ container := logger.Container{
 logger.Entry(container)
 ```
 
-The `Container` struct contains the necessary information for the log entry, including pre-text, ID, source, information, data, error message, processing time, HTTP request (optional), and processed data. You can customize the values based on your specific use case.
+The `Container` struct contains the necessary information for the log entry.
 
 The log message will be printed according to the severity level set during the logger creation. If the severity is set to `NONE`, the message will be ignored.
 
 ### Log Output
-The log output will be printed to the console or standard output, depending on the severity level:
-
-* If the severity is set to PRODUCTION, the log message will be printed using the log.Println function.
-* If the severity is set to DEBUG, the log message will be printed using the log.Println function, and additional details such as the processed data and request body will be logged in JSON format.
-
+The log output will be printed to the standard output, file or both. 
 ## Contributing
 Contributions to the logger package are welcome! If you find any issues or have suggestions for improvement, please open an issue or submit a pull request.

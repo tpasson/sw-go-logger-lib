@@ -62,9 +62,7 @@ func NewLogger(format []LogFormat, opt Options) (*Logger) {
 
 
 
-// Logs a message based on the severity level and the provided container.
-//
-// If the logger's severity level is set to NONE, the log entry will be skipped.
+// Logs a message based on the provided container.
 //
 // If the timestamp of the provided container is zero, it will be set to the current
 // timestamp using the generateTimestamp function.
@@ -121,7 +119,6 @@ func formatTimestamp(timestamp time.Time) string {
 // It also trims any trailing spaces from the formatted log message before writing it to the log file.
 func (l *Logger) processLogs() {
 	for c := range l.LogChan {
-
 
 		// Create buffer
 		var result strings.Builder

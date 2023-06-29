@@ -53,6 +53,8 @@ func NewLogger(format []LogFormat, opt Options) (*Logger) {
 		Options: opt,
 	}
 
+	logger.Entry(Container{Status: STATUS_INFO, PreText: "System", Info: "Logger succesfully started! Awaiting logger tasks"})
+
 	go logger.processLogs()
 
 	return logger
@@ -177,7 +179,7 @@ func (l *Logger) processLogs() {
 
 		trimmedResult := strings.TrimRight(result.String(), " ")
 
-		writeLog(trimmedResult, &c)
+		writeLog(l.Options.OutputFolderPath, trimmedResult, &c)
 	}
 }
 
@@ -276,11 +278,13 @@ func getProcessedData(processedData any) string {
 // The log message is written to the file and also printed to STDOUT.
 //
 // Parameters:
+//		- folderPath: string - the path of the folder where log files will be stored
 //    - message: string - the log message to write
 //    - c: *Container - the log entry container
-func writeLog(message string, c *Container) {
+func writeLog(folderPath string, message string, c *Container) {
 	// Format the log file name as YYYY_MM_DD.log based on the log event timestamp
-	logFileName := c.Timestamp.Format("2006_01_02") + ".log"
+	// This means that for each day a new log file will be created
+	logFileName := folderPath + c.Timestamp.Format("2006_01_02") + ".log"
 
 	// Open the log file in append mode, create if it doesn't exist
 	file, err := os.OpenFile(logFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)

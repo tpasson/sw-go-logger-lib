@@ -40,11 +40,13 @@ type Container struct {
 // Creates a new Logger instance with the specified ontent.
 //
 // Parameters:
-//	- format: string - the desired format
+//	- format: []LogFormata collection of the desired format (order will be considered in logs)
+//	- opt: Options options
+//	- firstEntry: Container which has the first entry message (when logger starts) defined	
 //
 // Returns:
 //	- *Logger: the created Logger instance
-func NewLogger(format []LogFormat, opt Options) (*Logger) {
+func NewLogger(format []LogFormat, opt Options, firstEntry Container) (*Logger) {
 	logger := &Logger{
 		Format: format,
 		LogChan:  make(chan Container),
@@ -53,9 +55,9 @@ func NewLogger(format []LogFormat, opt Options) (*Logger) {
 		Options: opt,
 	}
 
-	logger.Entry(Container{Status: STATUS_INFO, PreText: "System", Info: "Logger succesfully started! Awaiting logger tasks"})
-
 	go logger.processLogs()
+
+	logger.Entry(firstEntry)
 
 	return logger
 }
@@ -261,7 +263,8 @@ func getProcessedData(processedData any) string {
 	if err != nil {
 		return (err.Error())
 	}
-	wJsonData := string(wJsonBytes)
+	
+	wJsonData := ">Processed Data:\n" + string(wJsonBytes)
 
 	return wJsonData
 }

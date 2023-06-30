@@ -29,6 +29,9 @@ func TestLoggerOutput(t *testing.T) {
 
 
 func candidateOne(t *testing.T) {
+		// Create a reference timestamp
+		ts := time.Now()
+
 		// Create a new logger with desired format
 		logger := NewLogger(
 			[]LogFormat{
@@ -46,17 +49,18 @@ func candidateOne(t *testing.T) {
 			}, Options{
 				OutputStdout: true,
 				OutputFile: true,
-				OutputFolderPath: ".",
-		})
+				OutputFolderPath: "",
+			}, Container{
+				Status: STATUS_INFO,
+				Info: "System Logger succesfully started! Awaiting logger tasks...",
+				Timestamp: ts,
+			})
 
 		// Create a mock HTTP request for testing
 		request, _ := http.NewRequest("GET", "https://example.com", nil)
 		// Set the remote address
 		request.RemoteAddr = "192.168.0.1:12345"
-	
-		// Create a reference timestamp
-		ts := time.Now()
-	
+		
 		data := map[string]interface{}{
 			"name":     "John Doe",
 			"age":      30,
@@ -99,7 +103,10 @@ func candidateOne(t *testing.T) {
 		io.Copy(&capturedOutput, r)
 	
 		// Verify the captured output
-		expected := ts.Format(time.RFC3339) + " " + "INFO SERVER1 192.168.0.1:12345 GET https://example.com 5f322ac4ba handler/user This is an information message 233 something went wrong [1 ms] {\n  \"age\": 30,\n  \"isActive\": true,\n  \"name\": \"John Doe\",\n  \"tags\": [\n    \"go\",\n    \"programming\",\n    \"dummy\"\n  ]\n}\n"
+		res1 := ts.Format(time.RFC3339) + " INFO System Logger succesfully started! Awaiting logger tasks... >Processed Data:\nnull\n"
+		res2 := ts.Format(time.RFC3339) + " INFO SERVER1 192.168.0.1:12345 GET https://example.com 5f322ac4ba handler/user This is an information message 233 something went wrong [1 ms]"
+		res3 := " >Processed Data:\n{\n  \"age\": 30,\n  \"isActive\": true,\n  \"name\": \"John Doe\",\n  \"tags\": [\n    \"go\",\n    \"programming\",\n    \"dummy\"\n  ]\n}\n"
+		expected := res1 + res2 + res3
 		actual := capturedOutput.String()
 	
 		if string(actual) != string(expected) {
@@ -110,6 +117,9 @@ func candidateOne(t *testing.T) {
 
 
 func candidateTwo(t *testing.T) {
+	// Create a reference timestamp
+	ts := time.Now()
+
 	// Create a new logger with desired format
 	logger := NewLogger(
 		[]LogFormat{
@@ -126,8 +136,12 @@ func candidateTwo(t *testing.T) {
 			}, Options{
 		OutputStdout: true,
 		OutputFile: true,
-		OutputFolderPath: ".",
-	})
+		OutputFolderPath: "",
+		}, Container{
+			Status: STATUS_INFO,
+			Info: "System Logger succesfully started! Awaiting logger tasks...",
+			Timestamp: ts,
+		})
 
 	// Create a log entry container
 	container := Container{
@@ -161,7 +175,7 @@ func candidateTwo(t *testing.T) {
 	io.Copy(&capturedOutput, r)
 
 	// Verify the captured output
-	expected := "INFO SERVER1 5f322ac4ba handler/user This is an information message 233 something went wrong [1 ms] null\n"
+	expected := "INFO System Logger succesfully started! Awaiting logger tasks... >Processed Data:\nnull\nINFO SERVER1 5f322ac4ba handler/user This is an information message 233 something went wrong [1 ms] >Processed Data:\nnull\n"
 	actual := capturedOutput.String()
 
 	if string(actual) != string(expected) {
@@ -172,12 +186,19 @@ func candidateTwo(t *testing.T) {
 
 
 func candidateThree(t *testing.T) {
+	// Create a reference timestamp
+	ts := time.Now()
+
 	// Create a new logger with desired format
 	logger := NewLogger([]LogFormat{}, Options{
 		OutputStdout: true,
 		OutputFile: true,
-		OutputFolderPath: ".",
-	})
+		OutputFolderPath: "",
+		}, Container{
+			Status: STATUS_INFO,
+			Info: "System Logger succesfully started! Awaiting logger tasks...",
+			Timestamp: ts,
+		})
 
 	// Create a log entry container
 	container := Container{
@@ -222,6 +243,9 @@ func candidateThree(t *testing.T) {
 
 
 func candidateFour(t *testing.T) {
+	// Create a reference timestamp
+	ts := time.Now()	
+
 	// Create a new logger with desired format
 	logger := NewLogger(
 		[]LogFormat{
@@ -230,7 +254,11 @@ func candidateFour(t *testing.T) {
 		}, Options{
 				OutputStdout: true,
 				OutputFile: true,
-				OutputFolderPath: ".",
+				OutputFolderPath: "",
+		}, Container{
+			Status: STATUS_INFO,
+			Info: "System Logger succesfully started! Awaiting logger tasks...",
+			Timestamp: ts,
 		})
 
 	// Create a log entry container
@@ -285,7 +313,7 @@ func candidateFour(t *testing.T) {
 	time.Sleep(duration)
 
 	// Verify the captured output
-	expected := "Log Level Counters: [INFO: 5] [WARN: 1] [TRACE: 2] [ERROR: 4] [FATAL: 3]"
+	expected := "Log Level Counters: [INFO: 6] [WARN: 1] [TRACE: 2] [ERROR: 4] [FATAL: 3]"
 	actual := logger.GetLogStatusCounters()
 
 	if string(actual) != string(expected) {

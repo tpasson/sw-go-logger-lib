@@ -36,12 +36,11 @@ logger := NewLogger(
     }, Options {
         OutputStdout: true,
         OutputFile: true,
-        OutputFolderPath: "/path/to/folder",
+        OutputFolderPath: "/path/to/folder/",
     }, Container{
-        Status: STATUS_INFO,
+        Status: logger.STATUS_INFO,
         Info: "System Logger succesfully started! Awaiting logger tasks...",
-        Timestamp: ts,
-}))
+})
 ```
 
 NOTE: The order you choose with `LogFormat` will be strictly kept!

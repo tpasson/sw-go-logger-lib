@@ -24,6 +24,7 @@ func TestLoggerOutput(t *testing.T) {
 	candidateTwo(t)
 	candidateThree(t)
 	candidateFour(t)
+	candidateFive(t)
 }
 
 
@@ -33,19 +34,19 @@ func candidateOne(t *testing.T) {
 		ts := time.Now()
 
 		// Create a new logger with desired format
-		logger := NewLogger(
+		logger, err := NewLogger(
 			[]LogFormat{
-				TIMESTAMP, 
-				STATUS, 
-				PRE_TEXT, 
-				HTTP_REQUEST, 
-				ID, 
-				SOURCE, 
-				INFO, 
-				DATA, 
-				ERROR, 
-				PROCESSING_TIME, 
-				PROCESSED_DATA,
+				FORMAT_TIMESTAMP, 
+				FORMAT_STATUS, 
+				FORMAT_PRE_TEXT, 
+				FORMAT_HTTP_REQUEST, 
+				FORMAT_ID, 
+				FORMAT_SOURCE, 
+				FORMAT_INFO, 
+				FORMAT_DATA, 
+				FORMAT_ERROR, 
+				FORMAT_PROCESSING_TIME, 
+				FORMAT_PROCESSED_DATA,
 			}, Options{
 				OutputStdout: true,
 				OutputFile: true,
@@ -55,6 +56,9 @@ func candidateOne(t *testing.T) {
 				Info: "System Logger succesfully started! Awaiting logger tasks...",
 				Timestamp: ts,
 			})
+		if err != nil {
+			t.Errorf("Unexpected result: " + err.Error())
+		}	
 
 		// Create a mock HTTP request for testing
 		request, _ := http.NewRequest("GET", "https://example.com", nil)
@@ -121,18 +125,18 @@ func candidateTwo(t *testing.T) {
 	ts := time.Now()
 
 	// Create a new logger with desired format
-	logger := NewLogger(
+	logger, err := NewLogger(
 		[]LogFormat{
-			STATUS, 
-			PRE_TEXT, 
-			HTTP_REQUEST, 
-			ID, 
-			SOURCE, 
-			INFO, 
-			DATA, 
-			ERROR, 
-			PROCESSING_TIME, 
-			PROCESSED_DATA,
+			FORMAT_STATUS, 
+			FORMAT_PRE_TEXT, 
+			FORMAT_HTTP_REQUEST, 
+			FORMAT_ID, 
+			FORMAT_SOURCE, 
+			FORMAT_INFO, 
+			FORMAT_DATA, 
+			FORMAT_ERROR, 
+			FORMAT_PROCESSING_TIME, 
+			FORMAT_PROCESSED_DATA,
 			}, Options{
 		OutputStdout: true,
 		OutputFile: true,
@@ -142,6 +146,9 @@ func candidateTwo(t *testing.T) {
 			Info: "System Logger succesfully started! Awaiting logger tasks...",
 			Timestamp: ts,
 		})
+	if err != nil {
+		t.Errorf("Unexpected result: " + err.Error())
+	}	
 
 	// Create a log entry container
 	container := Container{
@@ -190,7 +197,7 @@ func candidateThree(t *testing.T) {
 	ts := time.Now()
 
 	// Create a new logger with desired format
-	logger := NewLogger([]LogFormat{}, Options{
+	logger, err := NewLogger([]LogFormat{}, Options{
 		OutputStdout: true,
 		OutputFile: true,
 		OutputFolderPath: "",
@@ -199,6 +206,9 @@ func candidateThree(t *testing.T) {
 			Info: "System Logger succesfully started! Awaiting logger tasks...",
 			Timestamp: ts,
 		})
+	if err != nil {
+		t.Errorf("Unexpected result: " + err.Error())
+	}	
 
 	// Create a log entry container
 	container := Container{
@@ -247,10 +257,10 @@ func candidateFour(t *testing.T) {
 	ts := time.Now()	
 
 	// Create a new logger with desired format
-	logger := NewLogger(
+	logger, err := NewLogger(
 		[]LogFormat{
-			STATUS,
-			ID,
+			FORMAT_STATUS,
+			FORMAT_ID,
 		}, Options{
 				OutputStdout: true,
 				OutputFile: true,
@@ -260,6 +270,9 @@ func candidateFour(t *testing.T) {
 			Info: "System Logger succesfully started! Awaiting logger tasks...",
 			Timestamp: ts,
 		})
+	if err != nil {
+		t.Errorf("Unexpected result: " + err.Error())
+	}	
 
 	// Create a log entry container
 	containerInfo := Container{
@@ -315,6 +328,39 @@ func candidateFour(t *testing.T) {
 	// Verify the captured output
 	expected := "Log Level Counters: [INFO: 6] [WARN: 1] [TRACE: 2] [ERROR: 4] [FATAL: 3]"
 	actual := logger.GetLogStatusCounters()
+
+	if string(actual) != string(expected) {
+		t.Errorf("Unexpected result.\nExpected:\n%#v\nGot:\n%#v", expected, actual)
+	}
+}
+
+
+
+func candidateFive(t *testing.T) {
+	// Create a reference timestamp
+	ts := time.Now()	
+
+	// Create a new logger with desired format
+	_, err := NewLogger(
+		[]LogFormat{
+			FORMAT_STATUS,
+			FORMAT_ID,
+		}, Options{
+				OutputStdout: true,
+				OutputFile: true,
+				OutputFolderPath: "folder/not/existing/",
+		}, Container{
+			Status: STATUS_INFO,
+			Info: "System Logger succesfully started! Awaiting logger tasks...",
+			Timestamp: ts,
+		})
+	if err == nil {
+		t.Errorf("Unexpected result: Code should throw an error here")
+	}	
+
+	// Verify the captured output
+	expected := "open folder/not/existing/testfile.tmp: no such file or directory"
+	actual := err.Error()
 
 	if string(actual) != string(expected) {
 		t.Errorf("Unexpected result.\nExpected:\n%#v\nGot:\n%#v", expected, actual)

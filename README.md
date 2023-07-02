@@ -1,5 +1,5 @@
 # Logger Package
-The `logger` package provides a logging utility that allows you to log messages with different severity levels. It includes features for structured logging.
+The `logger` package provides a logging utility that allows you to log messages with different structuring. It includes features for structured logging.
 ## Usage
 
 1. In your project, open a terminal or command prompt and navigate to the root directory of your Go project.
@@ -22,25 +22,25 @@ The `logger` package provides a logging utility that allows you to log messages 
 To create a new logger instance, use the `NewLogger` function:
 
 ```go
-logger := NewLogger(
-    []LogFormat{
-        TIMESTAMP, 
-        STATUS, 
-        PRE_TEXT, 
-        HTTP_REQUEST, 
-        ID, 
-        SOURCE, 
-        DATA, 
-        ERROR, 
-        PROCESSING_TIME,
-    }, Options {
-        OutputStdout: true,
-        OutputFile: true,
-        OutputFolderPath: "/path/to/folder/",
-    }, Container{
-        Status: logger.STATUS_INFO,
-        Info: "System Logger succesfully started! Awaiting logger tasks...",
-})
+	logger, err := logger.NewLogger(
+		[]logger.LogFormat{
+				logger.TIMESTAMP, 
+				logger.STATUS, 
+				logger.PRE_TEXT, 
+				logger.HTTP_REQUEST, 
+				logger.ID, 
+				logger.SOURCE, 
+				logger.DATA, 
+				logger.ERROR, 
+				logger.PROCESSING_TIME,
+		}, logger.Options {
+				OutputStdout: true,
+				OutputFile: true,
+				OutputFolderPath: "/path/to/log/folder/",
+		}, logger.Container{
+				Status: logger.STATUS_INFO,
+				Info: "System Logger succesfully started! Awaiting logger tasks...",
+	})
 ```
 
 NOTE: The order you choose with `LogFormat` will be strictly kept!

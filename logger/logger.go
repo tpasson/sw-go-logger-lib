@@ -46,7 +46,7 @@ type Container struct {
 //
 // Returns:
 //	- *Logger: the created Logger instance
-func NewLogger(format []LogFormat, opt Options, firstEntry Container) (*Logger) {
+func NewLogger(format []LogFormat, opt Options, firstEntry Container) (*Logger, error) {
 	logger := &Logger{
 		Format: format,
 		LogChan:  make(chan Container),
@@ -55,11 +55,16 @@ func NewLogger(format []LogFormat, opt Options, firstEntry Container) (*Logger) 
 		Options: opt,
 	}
 
+	_, err := checkWritePermission(opt.OutputFolderPath)
+	if err != nil {
+		return nil, err
+	}
+
 	go logger.processLogs()
 
 	logger.Entry(firstEntry)
 
-	return logger
+	return logger, nil
 }
 
 
@@ -127,49 +132,49 @@ func (l *Logger) processLogs() {
 
 		for _, formatItem := range l.Format {
 			switch formatItem {
-			case STATUS:
+			case FORMAT_STATUS:
 				if str := logStatustoString[c.Status]; str != "" {
 					// Increment the log level counter
 					incrementLogStatusCounter(l, c.Status)
 					result.WriteString(str + " ")
 				}
-			case PRE_TEXT:
+			case FORMAT_PRE_TEXT:
 				if c.PreText != "" {
 					result.WriteString(c.PreText + " ")
 				}
-			case ID:
+			case FORMAT_ID:
 				if c.Id != "" {
 					result.WriteString(c.Id + " ")
 				}
-			case SOURCE:
+			case FORMAT_SOURCE:
 				if c.Source != "" {
 					result.WriteString(c.Source + " ")
 				}
-			case INFO:
+			case FORMAT_INFO:
 				if c.Info != "" {
 					result.WriteString(c.Info + " ")
 				}
-			case DATA:
+			case FORMAT_DATA:
 				if c.Data != "" {
 					result.WriteString(c.Data + " ")
 				}
-			case ERROR:
+			case FORMAT_ERROR:
 				if c.Error != "" {
 					result.WriteString(c.Error + " ")
 				}
-			case PROCESSING_TIME:
+			case FORMAT_PROCESSING_TIME:
 				if str := getProcessingTime(c.ProcessingTime); str != "" {
 					result.WriteString(str + " ")
 				}
-			case TIMESTAMP:
+			case FORMAT_TIMESTAMP:
 				if str := formatTimestamp(c.Timestamp); str != "" {
 					result.WriteString(str + " ")
 				}
-			case HTTP_REQUEST:
+			case FORMAT_HTTP_REQUEST:
 				if str := getHttpRequest(c.HttpRequest); str != "" {
 					result.WriteString(str + " ")
 				}
-			case PROCESSED_DATA:
+			case FORMAT_PROCESSED_DATA:
 				if str := getProcessedData(c.ProcessedData); str != "" {
 					result.WriteString(str + " ")
 				}
@@ -302,4 +307,40 @@ func writeLog(folderPath string, message string, c *Container) {
 
 	// Write the log message to STDOUT
 	fmt.Println(message)
+}
+
+
+
+// Checks if the application has write permission to a specific folder.
+//
+// It generates a temporary file path in the provided folder and attempts to create the file.
+// If the application can create the file, it indicates the folder is writable.
+// After creating the file, it is immediately removed.
+// If the file creation fails due to a permission error, it implies the folder exists but is not writable.
+// Any other error while creating the file is returned as it is.
+//
+// Parameters:
+//      - folderPath: string - the path of the folder where write permission is to be checked
+//
+// Returns:
+//      - bool: A boolean indicating whether the application can write to the folder. 'True' indicates writable, 'False' otherwise.
+//      - error: An 'error' that will be non-nil in case of an exception while creating the file.
+func checkWritePermission(folderPath string) (bool, error) {
+	// Generate a test file path
+	testFilePath := folderPath + "testfile.tmp"
+
+	// Attempt to create the test file
+	file, err := os.OpenFile(testFilePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	if err != nil {
+		if os.IsPermission(err) {
+			return false, nil // False with no error means the folder exists but we can't write to it
+		}
+		return false, err // An error other than a permissions error occurred
+	}
+	file.Close() // Close the file if it was created
+
+	// Delete the test file
+	os.Remove(testFilePath)
+
+	return true, nil
 }

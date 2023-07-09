@@ -22,7 +22,7 @@ The `logger` package provides a logging utility that allows you to log messages 
 To create a new logger instance, use the `NewLogger` function:
 
 ```go
-	logger, err := logger.NewLogger(
+	appLogger, err := logger.NewLogger(
 		[]logger.LogFormat{
 				logger.FORMAT_TIMESTAMP, 
 				logger.FORMAT_STATUS, 
@@ -61,7 +61,7 @@ startTime := time.Now()
 // Define and prepare the logger container based on your operations result 
 // It is also allowed that a field is left blank or not be considered
 // Create a log entry container
-container := Container{
+container := logger.Container{
     Status:         logger.STATUS_INFO,
     PreText:        "SERVER1",
     HttpRequest:    r,
@@ -73,7 +73,7 @@ container := Container{
 }
 
 // Necessary to finally write log
-logger.Entry(container)
+appLogger.Entry(container)
 ```
 
 Another example:
@@ -95,7 +95,7 @@ container := logger.Container{
 }
 
 // Necessary to finally write log
-logger.Entry(container)
+appLogger.Entry(container)
 ```
 
 The `Container` struct contains the necessary information for the log entry.

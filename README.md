@@ -24,15 +24,15 @@ To create a new logger instance, use the `NewLogger` function:
 ```go
 	logger, err := logger.NewLogger(
 		[]logger.LogFormat{
-				logger.TIMESTAMP, 
-				logger.STATUS, 
-				logger.PRE_TEXT, 
-				logger.HTTP_REQUEST, 
-				logger.ID, 
-				logger.SOURCE, 
-				logger.DATA, 
-				logger.ERROR, 
-				logger.PROCESSING_TIME,
+				logger.FORMAT_TIMESTAMP, 
+				logger.FORMAT_STATUS, 
+				logger.FORMAT_PRE_TEXT, 
+				logger.FORMAT_HTTP_REQUEST, 
+				logger.FORMAT_ID, 
+				logger.FORMAT_SOURCE, 
+				logger.FORMAT_DATA, 
+				logger.FORMAT_ERROR, 
+				logger.FORMAT_PROCESSING_TIME,
 		}, logger.Options {
 				OutputStdout: true,
 				OutputFile: true,

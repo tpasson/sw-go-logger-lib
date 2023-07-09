@@ -32,21 +32,21 @@ var logStatustoString = map[LogStatus]string{
 // within the Logger instance.
 //
 // Example:
-//    logger := NewLogger()
-//    container := &Container{
-//        Status: STATUS_INFO,
-//    }
-//    incrementLogStatusCounter(logger, container)
-//    fmt.Println(logger.GetLogStatusCounters())
+//
+//	logger := logger.NewLogger()
+//	container := &Container{
+//	    Status: STATUS_INFO,
+//	}
+//	incrementLogStatusCounter(logger, container.Status)
+//	fmt.Println(logger.GetLogStatusCounters())
 //
 // Output:
-//    Log Level Counters:
-//      INFO: 1
-func incrementLogStatusCounter(l *Logger, ls LogStatus){
+//
+//	Log Level Counters:
+//	  INFO: 1
+func incrementLogStatusCounter(l *Logger, ls LogStatus) {
 	l.StatusCounters[ls]++
 }
-
-
 
 // Returns a formatted string representing the log level counters.
 //
@@ -59,11 +59,12 @@ func incrementLogStatusCounter(l *Logger, ls LogStatus){
 // formatted and appended to a strings.Builder. The resulting formatted string represents the log level counters.
 //
 // Example:
-//    logger := NewLogger()
-//    // Log some entries
-//    counters := logger.GetLogStatusCounters()
-//    fmt.Println(counters)
-//    // Output: Log Level Counters: [DEBUG: 2] [INFO: 5] [WARNING: 3] [ERROR: 1]
+//
+//	logger := logger.NewLogger()
+//	// Log some entries
+//	counters := logger.GetLogStatusCounters()
+//	fmt.Println(counters)
+//	// Output example: Log Level Counters: [DEBUG: 2] [INFO: 5] [WARNING: 3] [ERROR: 1]
 func (l *Logger) GetLogStatusCounters() string {
 	var builder strings.Builder
 	builder.WriteString("Log Level Counters:")

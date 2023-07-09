@@ -71,7 +71,7 @@ container := logger.Container{
     Source:         "handler/user",
     Data:           "233",	
     Error:          "something went wrong",
-    ProcessingTime: time.Since(start), // Takes elapsed time since start Time
+    ProcessingTime: time.Since(startTime), // Takes elapsed time since start Time
 }
 
 // Necessary to finally write log
@@ -92,7 +92,7 @@ container := logger.Container{
     Status:         logger.STATUS_INFO,
     Id:             "fafeeb13",
     Source:         "/handler/users",
-    ProcessingTime: time.Since(start), // Takes elapsed time since start Time
+    ProcessingTime: time.Since(startTime), // Takes elapsed time since start Time
     HttpRequest:    r,
 }
 

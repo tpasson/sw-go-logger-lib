@@ -45,6 +45,8 @@ To create a new logger instance, use the `NewLogger` function:
 
 NOTE: The order you choose with `LogFormat` will be strictly kept!
 
+When choosing a name, make sure it is unique and does not conflict with existing libraries or packages; so do not call your new instance `logger`.
+
 You can decide in the options whether the logger information should be printed to STDOUT `OutputToStdout: true` and also to the file `OutputToFile: true`. By standard both option items are `false` if you do not specify it explicitely. 
 
 * You can create one or more (be sure to choose different log files then) logger objects in your project and pass it's reference to your modules. 

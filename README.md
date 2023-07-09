@@ -34,8 +34,8 @@ To create a new logger instance, use the `NewLogger` function:
 				logger.FORMAT_ERROR, 
 				logger.FORMAT_PROCESSING_TIME,
 		}, logger.Options {
-				OutputStdout: true,
-				OutputFile: true,
+				OutputToStdout: false,
+				OutputToFile: true,
 				OutputFolderPath: "/path/to/log/folder/",
 		}, logger.Container{
 				Status: logger.STATUS_INFO,
@@ -44,6 +44,8 @@ To create a new logger instance, use the `NewLogger` function:
 ```
 
 NOTE: The order you choose with `LogFormat` will be strictly kept!
+
+You can decide in the options whether the logger information should be printed to STDOUT `OutputToStdout: true` and also to the file `OutputToFile: true`. By standard both option items are `false` if you do not specify it explicitely. 
 
 * You can create one or more (be sure to choose different log files then) logger objects in your project and pass it's reference to your modules. 
 

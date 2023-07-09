@@ -1,3 +1,3 @@
 module github.com/passon-engineering/sw-go-logger-lib
 
-go 1.19.4
+go 1.20

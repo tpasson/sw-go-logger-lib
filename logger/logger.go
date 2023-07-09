@@ -18,8 +18,8 @@ type Logger struct {
 }
 
 type Options struct {
-	OutputStdout     bool   // Set true if logs should be routed to STDOUT
-	OutputFile       bool   // Set true if logs should be routed to file
+	OutputToStdout   bool   // Set true if logs should be routed to STDOUT
+	OutputToFile     bool   // Set true if logs should be routed to file
 	OutputFolderPath string // Folder in which logs shall be stored
 }
 
@@ -175,7 +175,12 @@ func (l *Logger) processLogs() {
 
 		trimmedResult := strings.TrimRight(result.String(), " ")
 
-		writeLog(l.Options.OutputFolderPath, trimmedResult, &c)
+		if l.Options.OutputToFile == true {
+			writeLog(l.Options.OutputFolderPath, trimmedResult, &c)
+		}
+		if l.Options.OutputToStdout == true {
+			fmt.Println(trimmedResult)
+		}
 	}
 }
 

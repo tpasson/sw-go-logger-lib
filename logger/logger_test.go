@@ -46,8 +46,8 @@ func candidateOne(t *testing.T) {
 			FORMAT_PROCESSING_TIME,
 			FORMAT_PROCESSED_DATA,
 		}, Options{
-			OutputStdout:     true,
-			OutputFile:       true,
+			OutputToStdout:   false,
+			OutputToFile:     true,
 			OutputFolderPath: "",
 		}, Container{
 			Status:    STATUS_INFO,
@@ -134,8 +134,8 @@ func candidateTwo(t *testing.T) {
 			FORMAT_PROCESSING_TIME,
 			FORMAT_PROCESSED_DATA,
 		}, Options{
-			OutputStdout:     true,
-			OutputFile:       true,
+			OutputToStdout:   true,
+			OutputToFile:     true,
 			OutputFolderPath: "",
 		}, Container{
 			Status:    STATUS_INFO,
@@ -178,7 +178,7 @@ func candidateTwo(t *testing.T) {
 	io.Copy(&capturedOutput, r)
 
 	// Verify the captured output
-	expected := "INFO System Logger succesfully started! Awaiting logger tasks... >Processed Data:\nnull\nINFO SERVER1 5f322ac4ba handler/user This is an information message 233 something went wrong [1 ms] >Processed Data:\nnull\n"
+	expected := "INFO System Logger succesfully started! Awaiting logger tasks... >Processed Data:\nnull\nINFO System Logger succesfully started! Awaiting logger tasks... >Processed Data:\nnull\nINFO SERVER1 5f322ac4ba handler/user This is an information message 233 something went wrong [1 ms] >Processed Data:\nnull\nINFO SERVER1 5f322ac4ba handler/user This is an information message 233 something went wrong [1 ms] >Processed Data:\nnull\n"
 	actual := capturedOutput.String()
 
 	if string(actual) != string(expected) {
@@ -192,8 +192,8 @@ func candidateThree(t *testing.T) {
 
 	// Create a new logger with desired format
 	logger, err := NewLogger([]LogFormat{}, Options{
-		OutputStdout:     true,
-		OutputFile:       true,
+		OutputToStdout:   true,
+		OutputToFile:     true,
 		OutputFolderPath: "",
 	}, Container{
 		Status:    STATUS_INFO,
@@ -254,8 +254,8 @@ func candidateFour(t *testing.T) {
 			FORMAT_STATUS,
 			FORMAT_ID,
 		}, Options{
-			OutputStdout:     true,
-			OutputFile:       true,
+			OutputToStdout:   true,
+			OutputToFile:     true,
 			OutputFolderPath: "",
 		}, Container{
 			Status:    STATUS_INFO,
@@ -336,8 +336,8 @@ func candidateFive(t *testing.T) {
 			FORMAT_STATUS,
 			FORMAT_ID,
 		}, Options{
-			OutputStdout:     true,
-			OutputFile:       true,
+			OutputToStdout:   true,
+			OutputToFile:     true,
 			OutputFolderPath: "folder/not/existing/",
 		}, Container{
 			Status:    STATUS_INFO,

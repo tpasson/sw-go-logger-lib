@@ -176,7 +176,7 @@ func (l *Logger) processLogs() {
 		trimmedResult := strings.TrimRight(result.String(), " ")
 
 		if l.Options.OutputToFile == true {
-			writeLog(l.Options.OutputFolderPath, trimmedResult, &c)
+			writeLogToFile(l.Options.OutputFolderPath, trimmedResult, &c)
 		}
 		if l.Options.OutputToStdout == true {
 			fmt.Println(trimmedResult)
@@ -273,13 +273,13 @@ func getProcessedData(processedData any) string {
 //
 // It formats the log file name as "YYYY_MM_DD.log" based on the log event timestamp.
 // The log file is opened in append mode and created if it doesn't exist.
-// The log message is written to the file and also printed to STDOUT.
+// The log message is written to the file
 //
 // Parameters:
 //   - folderPath: string - the path of the folder where log files will be stored
 //   - message: string - the log message to write
 //   - c: *Container - the log entry container
-func writeLog(folderPath string, message string, c *Container) {
+func writeLogToFile(folderPath string, message string, c *Container) {
 	// Format the log file name as YYYY_MM_DD.log based on the log event timestamp
 	// This means that for each day a new log file will be created
 	logFileName := folderPath + c.Timestamp.Format("2006_01_02") + ".log"
@@ -297,9 +297,6 @@ func writeLog(folderPath string, message string, c *Container) {
 	if err != nil {
 		fmt.Println("Failed to write to log file:", err)
 	}
-
-	// Write the log message to STDOUT
-	fmt.Println(message)
 }
 
 // Checks if the application has write permission to a specific folder.

@@ -46,7 +46,7 @@ func candidateOne(t *testing.T) {
 			FORMAT_PROCESSING_TIME,
 			FORMAT_PROCESSED_DATA,
 		}, Options{
-			OutputToStdout:   false,
+			OutputToStdout:   true,
 			OutputToFile:     true,
 			OutputFolderPath: "",
 		}, Container{
@@ -93,7 +93,7 @@ func candidateOne(t *testing.T) {
 	// Call the Entry method to log the container
 	logger.Entry(container)
 
-	duration := 20 * time.Millisecond
+	duration := 200 * time.Millisecond
 	time.Sleep(duration)
 
 	// Reset STDOUT
@@ -105,10 +105,13 @@ func candidateOne(t *testing.T) {
 	io.Copy(&capturedOutput, r)
 
 	// Verify the captured output
-	res1 := ts.Format(time.RFC3339) + " INFO System Logger succesfully started! Awaiting logger tasks... >Processed Data:\nnull\n"
-	res2 := ts.Format(time.RFC3339) + " INFO SERVER1 192.168.0.1:12345 GET https://example.com 5f322ac4ba handler/user This is an information message 233 something went wrong [1 ms]"
+	res1 := ts.Format(time.RFC3339) + " INFO System Logger succesfully started! Awaiting logger tasks... [0.01 ms] >Processed Data:\nnull\n"
+	res2 := ts.Format(time.RFC3339) + " INFO SERVER1 192.168.0.1:12345 GET https://example.com 5f322ac4ba handler/user This is an information message 233 something went wrong [1.00 ms]"
 	res3 := " >Processed Data:\n{\n  \"age\": 30,\n  \"isActive\": true,\n  \"name\": \"John Doe\",\n  \"tags\": [\n    \"go\",\n    \"programming\",\n    \"dummy\"\n  ]\n}\n"
 	expected := res1 + res2 + res3
+
+	duration = 200 * time.Millisecond
+	time.Sleep(duration)
 	actual := capturedOutput.String()
 
 	if string(actual) != string(expected) {
@@ -149,8 +152,8 @@ func candidateTwo(t *testing.T) {
 	// Create a log entry container
 	container := Container{
 		Status:         STATUS_INFO,
-		PreText:        "SERVER1",
-		Id:             "5f322ac4ba",
+		PreText:        "SERVER5",
+		Id:             "5f322ac4bf",
 		Source:         "handler/user",
 		Info:           "This is an information message",
 		Data:           "233",
@@ -166,19 +169,24 @@ func candidateTwo(t *testing.T) {
 	// Call the Entry method to log the container
 	logger.Entry(container)
 
-	duration := 20 * time.Millisecond
+	duration := 200 * time.Millisecond
 	time.Sleep(duration)
 
 	// Reset STDOUT
 	w.Close()
 	os.Stdout = oldStdout
 
+	time.Sleep(duration)
+
 	// Read the captured output from the pipe
 	var capturedOutput strings.Builder
+
+	time.Sleep(duration)
+
 	io.Copy(&capturedOutput, r)
 
 	// Verify the captured output
-	expected := "INFO System Logger succesfully started! Awaiting logger tasks... >Processed Data:\nnull\nINFO System Logger succesfully started! Awaiting logger tasks... >Processed Data:\nnull\nINFO SERVER1 5f322ac4ba handler/user This is an information message 233 something went wrong [1 ms] >Processed Data:\nnull\nINFO SERVER1 5f322ac4ba handler/user This is an information message 233 something went wrong [1 ms] >Processed Data:\nnull\n"
+	expected := "INFO System Logger succesfully started! Awaiting logger tasks... [0.01 ms] >Processed Data:\nnull\nINFO SERVER5 5f322ac4bf handler/user This is an information message 233 something went wrong [1.00 ms] >Processed Data:\nnull\n"
 	actual := capturedOutput.String()
 
 	if string(actual) != string(expected) {

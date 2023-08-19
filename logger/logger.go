@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -175,10 +174,10 @@ func (l *Logger) processLogs() {
 
 		trimmedResult := strings.TrimRight(result.String(), " ")
 
-		if l.Options.OutputToFile == true {
+		if l.Options.OutputToFile {
 			writeLogToFile(l.Options.OutputFolderPath, trimmedResult, &c)
 		}
-		if l.Options.OutputToStdout == true {
+		if l.Options.OutputToStdout {
 			fmt.Println(trimmedResult)
 		}
 	}
@@ -214,28 +213,29 @@ func getHttpRequest(httpRequest *http.Request) string {
 //
 // It takes a time.Duration value representing the processing time as input. The function
 // converts the processing time to milliseconds and formats it as "[X ms]", where X is the
-// number of milliseconds. If the processing time is zero, an empty string is returned.
+// number of milliseconds. If the processing time is less than 0.01 ms, "0.01 ms" is returned.
 //
 // Parameters:
 //   - processingTime: time.Duration - the processing time to format
 //
 // Returns:
 //   - string: the formatted processing time
-//
-// Example:
-//
-//	processingTime := time.Duration(500 * time.Millisecond)
-//	result := getProcessingTime(processingTime)
-//	// result will be "[500 ms]"
 func getProcessingTime(processingTime time.Duration) string {
-	processingTimeMs := processingTime.Microseconds() / 1000
-	formattedTime := strconv.FormatInt(processingTimeMs, 10) + " ms"
+	// Convert the processingTime to milliseconds
+	processingTimeMs := float64(processingTime.Microseconds()) / 1000.0
 
-	if processingTimeMs != 0 {
-		result := "[" + formattedTime + "]"
-		return result
+	// Check if the processing time is less than 0.01 ms
+	if processingTimeMs < 0.01 {
+		processingTimeMs = 0.01
 	}
-	return ""
+
+	// Format the time as a string with two decimal places
+	formattedTime := fmt.Sprintf("%.2f ms", processingTimeMs)
+
+	// Enclose the formatted time in square brackets
+	result := "[" + formattedTime + "]"
+
+	return result
 }
 
 // Serializes the provided data to JSON format.
